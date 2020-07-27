@@ -1,7 +1,7 @@
 import express from "express";
-const transactionsController = require("../controllers/transactions");
+import * as apiController from "../controllers/transactions";
 const router = express.Router();
 
-router.get("/transactions", transactionsController.getTransactions);
+router.get("/transactions", apiController.getTransactions);
 
 module.exports = router;

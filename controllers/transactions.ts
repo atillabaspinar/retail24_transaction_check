@@ -2,7 +2,7 @@ import { populateTransactionList } from "../utils/transaction-helper";
 import { testdata } from "../data/testdata";
 import { transaction } from "../models/transaction";
 
-const getTransactions = (req: any, res: any, next: any) => {
+export const getTransactions = (req: any, res: any, next: any) => {
   console.log(req.query);
   const transactionId = req.query.transactionId;
   const confidenceLevel = parseFloat(req.query.confidenceLevel);
@@ -20,5 +20,3 @@ const getTransactions = (req: any, res: any, next: any) => {
   );
   res.status("200").json(resultingTransactionList);
 };
-
-exports.getTransactions = getTransactions;
