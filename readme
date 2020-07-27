@@ -15,8 +15,9 @@ in your git terminal, run
 
 In node console, you can observe the output of the algorithm.
 
-Note: The app, runs at port 80 (enforced by heroku).  If your system does not allow running at port 80, 
-1 - change the port number in app.ts (eg. 3000)
+Note: The app, runs at port 80 if defined in environment (as in heroku), otherwise at port 3000, 
+if the specified port is not allowed
+1 - change the port number in app.ts (eg. 3001)
 2 - rebuild by 'npm run tsc'
 3 - restart by 'npm start'
 
