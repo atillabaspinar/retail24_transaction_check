@@ -17,28 +17,42 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
             r[k] = a[j];
     return r;
 };
-var testData = require("../data/testdata");
+var transactionData = require("../data/testdata");
 var getTransactions = function (req, res, next) {
     console.log(req.query);
-    var trId = req.query.transactionId;
-    var confLevel = parseFloat(req.query.confidenceLevel);
-    console.log("getTransactions");
-    var transList = [];
-    var level = 0;
-    var parentStack = [];
-    populateTransactionList(parentStack, testData, false, trId, confLevel, transList, level);
-    res.status("201").json(transList);
+    var transactionId = req.query.transactionId;
+    var confidenceLevel = parseFloat(req.query.confidenceLevel);
+    var resultingTransactionList = [];
+    var level = 0; //recursion level
+    var parentStack = []; //parents of the current transction
+    populateTransactionList(parentStack, transactionData, false, transactionId, confidenceLevel, resultingTransactionList, level);
+    res.status("201").json(resultingTransactionList);
 };
+/**
+ *
+ * @param element transaction to be added to resulting list
+ * @param list resulting list of transactions to be sent
+ * @param parents stack of parent elements of current transaction
+ * @abstract  construct transcation element by calculationg combinedConnectionInfo
+ * confidence: current confidence * parent's confidence
+ * type: array of types till main parent
+ */
 var addToList = function (element, list, parents) {
     var _a, _b, _c, _d;
     var children = element.children, elementWithoutChildren = __rest(element, ["children"]);
     var closestParent = parents ? parents[parents.length - 1] : undefined;
+    //array of confidence types, by adding parent elements'
     var types = [];
     for (var _i = 0, parents_1 = parents; _i < parents_1.length; _i++) {
         var p = parents_1[_i];
         types.push(((_a = p.connectionInfo) === null || _a === void 0 ? void 0 : _a.type) || "");
     }
     types.push(((_b = element.connectionInfo) === null || _b === void 0 ? void 0 : _b.type) || "");
+    /**
+     * construct combinedConnectionInfo
+     * confidence: current confidence * parent's confidence
+     * type: array of types till main parent
+     */
     elementWithoutChildren.combinedConnectionInfo = {
         confidence: (((_c = element.connectionInfo) === null || _c === void 0 ? void 0 : _c.confidence) || 1) *
             (((_d = closestParent === null || closestParent === void 0 ? void 0 : closestParent.connectionInfo) === null || _d === void 0 ? void 0 : _d.confidence) || 1),
@@ -46,7 +60,20 @@ var addToList = function (element, list, parents) {
     };
     list.push(elementWithoutChildren);
 };
-var populateTransactionList = function (parentStack, children, parentMatch, idToFind, confidenceLevel, transList, level) {
+/**
+ *
+ * @param parentStack parents of the current level in a stack
+ * @param children current level elements in array
+ * @param parentMatch if the parent (or higher level) of the current level was matched by id
+ * @param idToFind id of the transcation in the request
+ * @param confidenceLevel confidence level in the request
+ * @param resultingList resulting list to be sent in the response
+ * @param level level of the recursion
+ * abstract this function basically gets a transaction id and confidence level and traverses the tree to match
+ * any transaction that matches to (id, conf level). it either finds a matching transaction or, it finds a
+ * transaction that is child of a matched transaction. Matching transactions are kept in an flat array.
+ */
+var populateTransactionList = function (parentStack, children, parentMatch, idToFind, confidenceLevel, resultingList, level) {
     if (parentMatch === void 0) { parentMatch = false; }
     level++;
     children.forEach(function (element) {
@@ -64,10 +91,10 @@ var populateTransactionList = function (parentStack, children, parentMatch, idTo
         var newParentMatch = parentMatch || false;
         if (element.id === idToFind) {
             newParentMatch = true;
-            var found = transList.findIndex(function (el) { return el.id === element.id; });
+            var found = resultingList.findIndex(function (el) { return el.id === element.id; });
             if (found === -1) {
                 console.log(spaces, "MATCH by id, ADD to list ", element.id);
-                addToList(element, transList, parentStack);
+                addToList(element, resultingList, parentStack);
             }
             else {
                 console.log(spaces, "MATCH by id, ALREADY in list ", element.id);
@@ -76,10 +103,10 @@ var populateTransactionList = function (parentStack, children, parentMatch, idTo
         else if (parentMatch &&
             element.connectionInfo &&
             ((_b = element.connectionInfo) === null || _b === void 0 ? void 0 : _b.confidence) >= confidenceLevel) {
-            var found = transList.findIndex(function (el) { return el.id === element.id; });
+            var found = resultingList.findIndex(function (el) { return el.id === element.id; });
             if (found === -1) {
                 console.log(spaces, "MATCH by conf, ADD to list ", element.id);
-                addToList(element, transList, parentStack);
+                addToList(element, resultingList, parentStack);
             }
             else {
                 console.log(spaces, "MATCH by conf, ALREADY in list ", element.id);
@@ -88,7 +115,7 @@ var populateTransactionList = function (parentStack, children, parentMatch, idTo
         if (element.children && element.children.length > 0) {
             var parents = __spreadArrays(parentStack);
             parents.push(element);
-            populateTransactionList(parents, element.children, newParentMatch, idToFind, confidenceLevel, transList, level);
+            populateTransactionList(parents, element.children, newParentMatch, idToFind, confidenceLevel, resultingList, level);
         }
     });
 };
