@@ -18,7 +18,7 @@ const getTransactions = (req: any, res: any, next: any) => {
     resultingTransactionList,
     level
   );
-  res.status("201").json(resultingTransactionList);
+  res.status("200").json(resultingTransactionList);
 };
 
 exports.getTransactions = getTransactions;
