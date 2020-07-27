@@ -391,5 +391,3 @@ export const testdata: transaction[] = [
     ],
   },
 ];
-
-module.exports = testdata;

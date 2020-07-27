@@ -8,4 +8,4 @@ app.use("/api", transactionRoutes);
 app.use(function (err, req, res, next) {
     res.status(500).json({ message: "internal error" });
 });
-app.listen(process.env.PORT || 80);
+app.listen(3080);

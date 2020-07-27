@@ -393,4 +393,3 @@ exports.testdata = [
         ],
     },
 ];
-module.exports = exports.testdata;
