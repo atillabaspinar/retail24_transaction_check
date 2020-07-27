@@ -1,4 +1,5 @@
-const testdata: transaction[] = [
+import { transaction } from "../models/transaction";
+export const testdata: transaction[] = [
   {
     id: "5c868b22eb7069b50c6d2d32",
     age: 38,

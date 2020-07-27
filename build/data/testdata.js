@@ -1,5 +1,7 @@
 "use strict";
-var testdata = [
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.testdata = void 0;
+exports.testdata = [
     {
         id: "5c868b22eb7069b50c6d2d32",
         age: 38,
@@ -391,4 +393,4 @@ var testdata = [
         ],
     },
 ];
-module.exports = testdata;
+module.exports = exports.testdata;
