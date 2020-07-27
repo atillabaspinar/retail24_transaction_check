@@ -1,13 +1,12 @@
 This is a sample Node.js application to demonstrate confidence level algorithm to prevent online shopping fraud.
-To run the application, 
-
-
+To run the application
 
 in your git terminal, run 
 1 - "git clone <link to this repo>"
-2 - npm install
-3 - npm run tsc, to build the app in typescript
-4 - npm start, to run the application
+2 - cd <cloned-directory>
+3 - npm install
+4 - npm run tsc, to build the app in typescript
+5 - npm start, to run the application
 
 
 The app, runs at port 80. 
