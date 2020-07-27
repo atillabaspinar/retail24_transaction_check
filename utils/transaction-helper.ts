@@ -19,9 +19,13 @@ const addToList = (
   //array of confidence types, by adding parent elements'
   const types: string[] = [];
   for (const p of parents) {
-    types.push(p.connectionInfo?.type || "");
+    if (p.connectionInfo?.type) {
+      types.push(p.connectionInfo?.type);
+    }
   }
-  types.push(element.connectionInfo?.type || "");
+  if (element.connectionInfo?.type) {
+    types.push(element.connectionInfo?.type);
+  }
 
   /**
    * construct combinedConnectionInfo
