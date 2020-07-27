@@ -29,24 +29,28 @@ exports.populateTransactionList = void 0;
  * type: array of types till main parent
  */
 var addToList = function (element, list, parents) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f;
     var children = element.children, elementWithoutChildren = __rest(element, ["children"]);
     var closestParent = parents ? parents[parents.length - 1] : undefined;
     //array of confidence types, by adding parent elements'
     var types = [];
     for (var _i = 0, parents_1 = parents; _i < parents_1.length; _i++) {
         var p = parents_1[_i];
-        types.push(((_a = p.connectionInfo) === null || _a === void 0 ? void 0 : _a.type) || "");
+        if ((_a = p.connectionInfo) === null || _a === void 0 ? void 0 : _a.type) {
+            types.push((_b = p.connectionInfo) === null || _b === void 0 ? void 0 : _b.type);
+        }
     }
-    types.push(((_b = element.connectionInfo) === null || _b === void 0 ? void 0 : _b.type) || "");
+    if ((_c = element.connectionInfo) === null || _c === void 0 ? void 0 : _c.type) {
+        types.push((_d = element.connectionInfo) === null || _d === void 0 ? void 0 : _d.type);
+    }
     /**
      * construct combinedConnectionInfo
      * confidence: current confidence * parent's confidence
      * type: array of types till main parent
      */
     elementWithoutChildren.combinedConnectionInfo = {
-        confidence: (((_c = element.connectionInfo) === null || _c === void 0 ? void 0 : _c.confidence) || 1) *
-            (((_d = closestParent === null || closestParent === void 0 ? void 0 : closestParent.connectionInfo) === null || _d === void 0 ? void 0 : _d.confidence) || 1),
+        confidence: (((_e = element.connectionInfo) === null || _e === void 0 ? void 0 : _e.confidence) || 1) *
+            (((_f = closestParent === null || closestParent === void 0 ? void 0 : closestParent.connectionInfo) === null || _f === void 0 ? void 0 : _f.confidence) || 1),
         type: types,
     };
     list.push(elementWithoutChildren);
