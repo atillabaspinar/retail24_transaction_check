@@ -28,32 +28,47 @@ exports.populateTransactionList = void 0;
  * confidence: current confidence * parent's confidence
  * type: array of types till main parent
  */
-var addToList = function (element, list, parents) {
-    var _a, _b, _c, _d, _e, _f;
+var addToList = function (element, list, parents, idToFind) {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     var children = element.children, elementWithoutChildren = __rest(element, ["children"]);
-    var closestParent = parents ? parents[parents.length - 1] : undefined;
-    //array of confidence types, by adding parent elements'
-    var types = [];
-    for (var _i = 0, parents_1 = parents; _i < parents_1.length; _i++) {
-        var p = parents_1[_i];
-        if ((_a = p.connectionInfo) === null || _a === void 0 ? void 0 : _a.type) {
-            types.push((_b = p.connectionInfo) === null || _b === void 0 ? void 0 : _b.type);
+    var parentsOfElement = parents.slice().reverse();
+    var closestParent = parentsOfElement.length > 0 ? parentsOfElement[0] : undefined;
+    // element is matched by id, there is no parent of it
+    if (element.id === idToFind) {
+        console.log("add to list PARENT");
+        if ((_a = element.connectionInfo) === null || _a === void 0 ? void 0 : _a.type) {
+            elementWithoutChildren.combinedConnectionInfo = {
+                confidence: 1,
+                type: [(_b = element.connectionInfo) === null || _b === void 0 ? void 0 : _b.type],
+            };
+            list.push(elementWithoutChildren);
         }
     }
-    if ((_c = element.connectionInfo) === null || _c === void 0 ? void 0 : _c.type) {
-        types.push((_d = element.connectionInfo) === null || _d === void 0 ? void 0 : _d.type);
+    else {
+        // element is matched by confidence, there is at least one parent (matched by id)
+        var types = [];
+        // first push elements type
+        if ((_c = element.connectionInfo) === null || _c === void 0 ? void 0 : _c.type) {
+            types.push((_d = element.connectionInfo) === null || _d === void 0 ? void 0 : _d.type);
+        }
+        // then push parents' type until main parent
+        for (var _i = 0, parentsOfElement_1 = parentsOfElement; _i < parentsOfElement_1.length; _i++) {
+            var p = parentsOfElement_1[_i];
+            if ((_e = p.connectionInfo) === null || _e === void 0 ? void 0 : _e.type) {
+                types.push((_f = p.connectionInfo) === null || _f === void 0 ? void 0 : _f.type);
+            }
+            if (p.id === idToFind) {
+                //reached to the main parent, stop
+                break;
+            }
+        }
+        elementWithoutChildren.combinedConnectionInfo = {
+            confidence: (((_g = element.connectionInfo) === null || _g === void 0 ? void 0 : _g.confidence) || 1) *
+                (((_h = closestParent === null || closestParent === void 0 ? void 0 : closestParent.connectionInfo) === null || _h === void 0 ? void 0 : _h.confidence) || 1),
+            type: types,
+        };
+        list.push(elementWithoutChildren);
     }
-    /**
-     * construct combinedConnectionInfo
-     * confidence: current confidence * parent's confidence
-     * type: array of types till main parent
-     */
-    elementWithoutChildren.combinedConnectionInfo = {
-        confidence: (((_e = element.connectionInfo) === null || _e === void 0 ? void 0 : _e.confidence) || 1) *
-            (((_f = closestParent === null || closestParent === void 0 ? void 0 : closestParent.connectionInfo) === null || _f === void 0 ? void 0 : _f.confidence) || 1),
-        type: types,
-    };
-    list.push(elementWithoutChildren);
 };
 /**
  *
@@ -80,7 +95,7 @@ exports.populateTransactionList = function (parentStack, children, parentMatch, 
         var parentsInStack = "";
         for (var _i = 0, parentStack_1 = parentStack; _i < parentStack_1.length; _i++) {
             var el = parentStack_1[_i];
-            parentsInStack += el.id.substr(15, 4) + " ";
+            parentsInStack += el.id.substr(20) + " ";
         }
         console.log(spaces, level, ". level", element.id, " confidence:", (_a = element.connectionInfo) === null || _a === void 0 ? void 0 : _a.confidence, " parentMatch:", parentMatch, "parents: ", parentsInStack);
         var newParentMatch = parentMatch || false;
@@ -89,7 +104,7 @@ exports.populateTransactionList = function (parentStack, children, parentMatch, 
             var found = resultingList.findIndex(function (el) { return el.id === element.id; });
             if (found === -1) {
                 console.log(spaces, "MATCH by id, ADD to list ", element.id);
-                addToList(element, resultingList, parentStack);
+                addToList(element, resultingList, parentStack, idToFind);
             }
             else {
                 console.log(spaces, "MATCH by id, ALREADY in list ", element.id);
@@ -101,7 +116,7 @@ exports.populateTransactionList = function (parentStack, children, parentMatch, 
             var found = resultingList.findIndex(function (el) { return el.id === element.id; });
             if (found === -1) {
                 console.log(spaces, "MATCH by conf, ADD to list ", element.id);
-                addToList(element, resultingList, parentStack);
+                addToList(element, resultingList, parentStack, idToFind);
             }
             else {
                 console.log(spaces, "MATCH by conf, ALREADY in list ", element.id);

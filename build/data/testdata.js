@@ -36,7 +36,7 @@ exports.testdata = [
                         phone: "(856) 488-3734",
                         connectionInfo: {
                             type: "sameEmail",
-                            confidence: 1,
+                            confidence: 0.9,
                         },
                         geoInfo: {
                             latitude: 5.393689,

@@ -11,34 +11,50 @@ import { transaction } from "../models/transaction";
 const addToList = (
   element: transaction,
   list: transaction[],
-  parents: transaction[]
+  parents: transaction[],
+  idToFind: string
 ) => {
   const { children, ...elementWithoutChildren } = element;
-  const closestParent = parents ? parents[parents.length - 1] : undefined;
 
-  //array of confidence types, by adding parent elements'
-  const types: string[] = [];
-  for (const p of parents) {
-    if (p.connectionInfo?.type) {
-      types.push(p.connectionInfo?.type);
+  const parentsOfElement = parents.slice().reverse();
+  const closestParent =
+    parentsOfElement.length > 0 ? parentsOfElement[0] : undefined;
+
+  // element is matched by id, there is no parent of it
+  if (element.id === idToFind) {
+    console.log("add to list PARENT");
+    if (element.connectionInfo?.type) {
+      elementWithoutChildren.combinedConnectionInfo = {
+        confidence: 1,
+        type: [element.connectionInfo?.type],
+      };
+      list.push(elementWithoutChildren);
     }
+  } else {
+    // element is matched by confidence, there is at least one parent (matched by id)
+    const types: string[] = [];
+    // first push elements type
+    if (element.connectionInfo?.type) {
+      types.push(element.connectionInfo?.type);
+    }
+    // then push parents' type until main parent
+    for (const p of parentsOfElement) {
+      if (p.connectionInfo?.type) {
+        types.push(p.connectionInfo?.type);
+      }
+      if (p.id === idToFind) {
+        //reached to the main parent, stop
+        break;
+      }
+    }
+    elementWithoutChildren.combinedConnectionInfo = {
+      confidence:
+        (element.connectionInfo?.confidence || 1) *
+        (closestParent?.connectionInfo?.confidence || 1),
+      type: types,
+    };
+    list.push(elementWithoutChildren);
   }
-  if (element.connectionInfo?.type) {
-    types.push(element.connectionInfo?.type);
-  }
-
-  /**
-   * construct combinedConnectionInfo
-   * confidence: current confidence * parent's confidence
-   * type: array of types till main parent
-   */
-  elementWithoutChildren.combinedConnectionInfo = {
-    confidence:
-      (element.connectionInfo?.confidence || 1) *
-      (closestParent?.connectionInfo?.confidence || 1),
-    type: types,
-  };
-  list.push(elementWithoutChildren);
 };
 
 /**
@@ -70,7 +86,7 @@ export const populateTransactionList = (
     while (level_--) spaces += "\t";
     let parentsInStack = "";
     for (const el of parentStack) {
-      parentsInStack += el.id.substr(15, 4) + " ";
+      parentsInStack += el.id.substr(20) + " ";
     }
     console.log(
       spaces,
@@ -91,7 +107,7 @@ export const populateTransactionList = (
       const found = resultingList.findIndex((el) => el.id === element.id);
       if (found === -1) {
         console.log(spaces, "MATCH by id, ADD to list ", element.id);
-        addToList(element, resultingList, parentStack);
+        addToList(element, resultingList, parentStack, idToFind);
       } else {
         console.log(spaces, "MATCH by id, ALREADY in list ", element.id);
       }
@@ -103,7 +119,7 @@ export const populateTransactionList = (
       const found = resultingList.findIndex((el) => el.id === element.id);
       if (found === -1) {
         console.log(spaces, "MATCH by conf, ADD to list ", element.id);
-        addToList(element, resultingList, parentStack);
+        addToList(element, resultingList, parentStack, idToFind);
       } else {
         console.log(spaces, "MATCH by conf, ALREADY in list ", element.id);
       }
